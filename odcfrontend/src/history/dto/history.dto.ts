@@ -30,6 +30,12 @@ export const historyEntrySchema = z.object({
         .trim()
         .min(1, "User mobile number is required")
         .regex(/^[0-9]{10}$/, "Enter valid 10 digit mobile number"),
+
+    phoneNumber: z.string().optional(),
+
+    photoUri: z.string().optional(),
+
+    createdAt: z.string().optional(),
 });
 
 export type HistoryEntryFormValues = z.infer<typeof historyEntrySchema>;
