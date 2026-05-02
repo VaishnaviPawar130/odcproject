@@ -37,6 +37,13 @@ const CourierEntrySchema = new Schema(
       trim: true,
     },
 
+    // audio
+    audio: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+
     // Entry date
     entryDate: {
       type: Date,
