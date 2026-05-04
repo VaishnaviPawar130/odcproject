@@ -36,7 +36,10 @@
 
 import { z } from "zod";
 
+// Login form validation schema
 export const loginSchema = z.object({
+
+    // Mobile number validation
     phone: z
         .string()
         .trim()
@@ -48,6 +51,7 @@ export const loginSchema = z.object({
             "Enter valid  mobile number."
         ),
 
+    // Password validation
     password: z
         .string()
         .trim()
@@ -56,8 +60,10 @@ export const loginSchema = z.object({
         .max(50, "Password must not be more than 50 characters"),
 });
 
+// Login request type
 export type LoginRequestDto = z.infer<typeof loginSchema>;
 
+// Logged-in user type
 export type LoginUserDto = {
     id: string;
     name: string;
@@ -65,6 +71,7 @@ export type LoginUserDto = {
     role: "superadmin" | "user";
 };
 
+// Login API response type
 export type LoginResponseDto = {
     success: boolean;
     message: string;

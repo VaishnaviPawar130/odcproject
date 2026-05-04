@@ -8,10 +8,13 @@ import type {
 import { CourierMasterService } from "../services/CourierMaster.service";
 
 export function useCourierMaster() {
+    // Courier master list state
     const [courierMasters, setCourierMasters] = useState<CourierMasterRow[]>([]);
+    // Loading state
     const [isLoading, setIsLoading] = useState(false);
+    // Error state
     const [error, setError] = useState<string | null>(null);
-
+    // Load courier masters
     const loadCourierMasters = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -30,6 +33,7 @@ export function useCourierMaster() {
         }
     }, []);
 
+    // Create courier master
     const createCourierMaster = useCallback(
         async (payload: CourierMasterFormValues) => {
             setIsLoading(true);
@@ -50,7 +54,7 @@ export function useCourierMaster() {
         },
         []
     );
-
+    // Update courier master
     const updateCourierMaster = useCallback(
         async (id: string, payload: CourierMasterFormValues) => {
             setIsLoading(true);
@@ -79,6 +83,7 @@ export function useCourierMaster() {
         []
     );
 
+    // Delete courier master
     const deleteCourierMaster = useCallback(async (id: string) => {
         setIsLoading(true);
         setError(null);
@@ -97,10 +102,12 @@ export function useCourierMaster() {
         }
     }, []);
 
+    // Load data on mount
     useEffect(() => {
         loadCourierMasters();
     }, [loadCourierMasters]);
 
+    // Return data and actions
     return {
         courierMasters,
         setCourierMasters,

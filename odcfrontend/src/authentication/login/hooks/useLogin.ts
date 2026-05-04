@@ -3,11 +3,13 @@ import { useCallback, useState } from "react";
 import type { LoginRequestDto, LoginResponseDto } from "../dto/login.dto";
 import { LoginService } from "../services/Login.service";
 
+// Convert API error to user-friendly message
 function mapLoginErrorMessage(err: any): string {
     const apiMessage = String(err?.response?.data?.message || "")
         .trim()
         .toLowerCase();
 
+    // Phone number not registered
     if (
         apiMessage.includes("phone number doesnt exists") ||
         apiMessage.includes("phone number doesn't exist") ||
@@ -16,10 +18,12 @@ function mapLoginErrorMessage(err: any): string {
         return "This phone number is not registered. Please sign up first.";
     }
 
+    // Invalid login details
     if (apiMessage.includes("invalid") || apiMessage.includes("password")) {
         return "Invalid phone number or password.";
     }
 
+    // Server/network issue
     if (err?.message === "Network Error") {
         return "Unable to connect to server. Please check your internet or try again.";
     }
@@ -28,10 +32,13 @@ function mapLoginErrorMessage(err: any): string {
 }
 
 export function useLogin() {
+    // Loading state
     const [isLoading, setIsLoading] = useState(false);
+    // Error message state
     const [error, setError] = useState<string | null>(null);
+    // Login response state
     const [data, setData] = useState<LoginResponseDto | null>(null);
-
+    // Login API call
     const login = useCallback(async (payload: LoginRequestDto) => {
         setIsLoading(true);
         setError(null);
@@ -49,11 +56,13 @@ export function useLogin() {
         }
     }, []);
 
+    // Reset login state
     const reset = useCallback(() => {
         setError(null);
         setData(null);
     }, []);
 
+    // Return login data and actions
     return {
         login,
         reset,

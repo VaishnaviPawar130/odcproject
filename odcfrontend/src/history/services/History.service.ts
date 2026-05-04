@@ -3,25 +3,39 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import type {
     GetHistoryEntriesResponse,
-    HistoryEntryRow,
+    HistoryEntryFormValues,
     LoggedInUserDto,
 } from "../dto/history.dto";
 
-const uploadBaseUrl = (apiClient.defaults.baseURL || "").replace(/\/api\/?$/, "");
+// Get base URL for uploaded files
+function getUploadBaseUrl() {
+    return (apiClient.defaults.baseURL || "").replace(/\/api\/?$/, "");
+}
 
-function buildPhotoUrl(picture?: string | null) {
-    if (!picture) return "";
+// Build full media URL
+function buildMediaUrl(path?: string | null) {
+    if (!path) return "";
 
-    if (/^https?:\/\//i.test(picture)) {
-        const separator = picture.includes("?") ? "&" : "?";
-        return `${picture}${separator}t=${Date.now()}`;
+    if (/^https?:\/\//i.test(path)) {
+        const separator = path.includes("?") ? "&" : "?";
+        return `${path}${separator}t=${Date.now()}`;
     }
 
-    const filename = picture.split(/[\\/]/).pop();
-    return `${uploadBaseUrl}/uploads/${filename}?t=${Date.now()}`;
+    const normalizedPath = path.replace(/\\/g, "/");
+    const uploadsSegment = "/uploads/";
+    const uploadsIndex = normalizedPath.lastIndexOf(uploadsSegment);
+
+    if (uploadsIndex >= 0) {
+        const relativePath = normalizedPath.slice(uploadsIndex + uploadsSegment.length);
+        return `${getUploadBaseUrl()}/uploads/${relativePath}?t=${Date.now()}`;
+    }
+
+    const filename = normalizedPath.split("/").pop();
+    return `${getUploadBaseUrl()}/uploads/${filename}?t=${Date.now()}`;
 }
 
 export class HistoryService {
+    // Get logged-in user
     static async getLoggedInUser(): Promise<LoggedInUserDto | null> {
         const storedUser = await AsyncStorage.getItem("loggedInUser");
 
@@ -32,6 +46,7 @@ export class HistoryService {
         return JSON.parse(storedUser) as LoggedInUserDto;
     }
 
+    // Get history entries
     static async getHistoryEntries(page = 1, limit = 100): Promise<GetHistoryEntriesResponse> {
         const loggedInUser = await this.getLoggedInUser();
 
@@ -47,14 +62,15 @@ export class HistoryService {
 
         try {
             const response = await apiClient.get(`/courier?page=${page}&limit=${limit}`);
-            
+
             if (!response.data || !response.data.success) {
                 throw new Error("Failed to fetch history");
             }
 
             const rawData = response.data.data || [];
 
-            const mappedData: HistoryEntryRow[] = rawData.map((item: any) => ({
+            // Convert API data to frontend history format
+            const mappedData: HistoryEntryFormValues[] = rawData.map((item: any) => ({
                 id: item._id,
                 date: item.entryDate,
                 courierName: item.courierId?.company_name || "Unknown Courier",
@@ -62,9 +78,11 @@ export class HistoryService {
                 collectedBy: item.collectedBy,
                 hasPhoto: !!item.picture,
                 userMobileNo: item.contactNumber,
-                photoUri: buildPhotoUrl(item.picture),
+                photoUri: buildMediaUrl(item.picture),
+                audioUri: buildMediaUrl(item.audio),
             }));
 
+            // Filter records based on user role
             const filteredData =
                 loggedInUser.role.toLowerCase() === "superadmin"
                     ? mappedData

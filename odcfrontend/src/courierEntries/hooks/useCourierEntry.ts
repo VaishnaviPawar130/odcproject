@@ -9,11 +9,15 @@ import type {
 import { CourierEntryService } from "../services/CourierEntry.service";
 
 export function useCourierEntry() {
+    // Courier list state
     const [courierList, setCourierList] = useState<CourierRow[]>([]);
+    // Courier entries state
     const [entries, setEntries] = useState<CourierEntryRow[]>([]);
+    // Loading state
     const [isLoading, setIsLoading] = useState(false);
+    // Error state
     const [error, setError] = useState<string | null>(null);
-
+    // Load courier list and entries
     const loadInitialData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -33,6 +37,7 @@ export function useCourierEntry() {
         }
     }, []);
 
+    // Create new courier entry
     const createEntry = useCallback(async (payload: CourierEntryFormValues) => {
         setIsLoading(true);
         setError(null);
@@ -53,6 +58,7 @@ export function useCourierEntry() {
         }
     }, []);
 
+    // Update entry photo
     const updateEntryPhoto = useCallback(
         async (entryId: string, photoUri: string) => {
             setIsLoading(true);
@@ -83,6 +89,7 @@ export function useCourierEntry() {
         []
     );
 
+    // Delete courier entry
     const deleteEntry = useCallback(async (entryId: string) => {
         setIsLoading(true);
         setError(null);
@@ -103,6 +110,7 @@ export function useCourierEntry() {
         }
     }, []);
 
+    // Load data on screen mount
     useEffect(() => {
         loadInitialData();
     }, [loadInitialData]);

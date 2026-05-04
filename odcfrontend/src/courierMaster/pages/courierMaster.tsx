@@ -26,6 +26,7 @@ import {
 } from "@/src/courierMaster/dto/courierMaster.dto";
 import { useCourierMaster } from "@/src/courierMaster/hooks/useCourierMaster";
 
+// Error type for form fields
 type CourierMasterErrors = Partial<Record<keyof CourierMasterFormValues, string>>;
 
 export default function CourierMaster() {
@@ -37,16 +38,19 @@ export default function CourierMaster() {
         isLoading,
     } = useCourierMaster();
 
+    // Form states
     const [courierName, setCourierName] = useState("");
     const [mobileNo, setMobileNo] = useState("");
     const [isFocused, setIsFocused] = useState<string | null>(null);
+    // Selected courier state
     const [selectedCourier, setSelectedCourier] =
         useState<CourierMasterRow | null>(null);
-
+    // Action and edit states
     const [actionMenuVisible, setActionMenuVisible] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    // Validation errors
     const [errors, setErrors] = useState<CourierMasterErrors>({});
-
+    // Table columns
     const courierColumns: AppTableColumn<CourierMasterRow>[] = [
         {
             key: "srNo",
@@ -79,23 +83,23 @@ export default function CourierMaster() {
             ),
         },
     ];
-
+    // Open action menu
     function openActionMenu(courier: CourierMasterRow) {
         setSelectedCourier(courier);
         setActionMenuVisible(true);
     }
-
+    // Close action menu
     function closeActionMenu() {
         setActionMenuVisible(false);
     }
-
+    // Reset form fields
     function resetForm() {
         setCourierName("");
         setMobileNo("");
         setEditingId(null);
         setErrors({});
     }
-
+    // Handle courier name input
     function handleCourierNameChange(value: string) {
         setCourierName(value);
 
@@ -106,7 +110,7 @@ export default function CourierMaster() {
             }));
         }
     }
-
+    // Handle mobile number input
     function handleMobileNoChange(value: string) {
         const onlyDigits = value.replace(/[^0-9]/g, "");
 
@@ -119,6 +123,7 @@ export default function CourierMaster() {
             }));
         }
     }
+    // Save or update courier
 
     async function handleSubmit() {
         const payload: CourierMasterFormValues = {
@@ -173,6 +178,7 @@ export default function CourierMaster() {
         resetForm();
     }
 
+    // Fill form for editing
     function handleEditCourier() {
         if (!selectedCourier) return;
 
@@ -183,6 +189,7 @@ export default function CourierMaster() {
         setErrors({});
     }
 
+    // Delete selected courier
     function handleDeleteCourier() {
         if (!selectedCourier) return;
 
@@ -216,7 +223,7 @@ export default function CourierMaster() {
     return (
         <SafeAreaView className="flex-1 bg-gray-100" edges={["top"]}>
             <StatusBar barStyle="dark-content" backgroundColor="#f3f4f6" />
-
+            {/* Keyboard handling */}
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
                 className="flex-1"
@@ -277,10 +284,10 @@ export default function CourierMaster() {
                         <View className="mb-5">
                             <View
                                 className={`flex-row items-center rounded-2xl border px-4 ${errors.courierName
-                                        ? "border-red-500 bg-red-50"
-                                        : isFocused === "courierName"
-                                            ? "border-blue-600 bg-white"
-                                            : "border-gray-200 bg-gray-50"
+                                    ? "border-red-500 bg-red-50"
+                                    : isFocused === "courierName"
+                                        ? "border-blue-600 bg-white"
+                                        : "border-gray-200 bg-gray-50"
                                     }`}
                             >
                                 <Ionicons
@@ -316,10 +323,10 @@ export default function CourierMaster() {
                         <View className="mb-6">
                             <View
                                 className={`flex-row items-center rounded-2xl border px-4 ${errors.mobileNo
-                                        ? "border-red-500 bg-red-50"
-                                        : isFocused === "mobileNo"
-                                            ? "border-blue-600 bg-white"
-                                            : "border-gray-200 bg-gray-50"
+                                    ? "border-red-500 bg-red-50"
+                                    : isFocused === "mobileNo"
+                                        ? "border-blue-600 bg-white"
+                                        : "border-gray-200 bg-gray-50"
                                     }`}
                             >
                                 <Ionicons

@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAccount } from "@/src/account/hooks/useAccount";
 
 export default function Account() {
+    // Get user data and logout function
     const { user, signOut } = useAccount();
 
     return (
@@ -19,14 +20,15 @@ export default function Account() {
                 {/* Profile Header */}
                 <View className="border-b border-gray-100 bg-white px-6 pb-12 pt-6 shadow-sm">
                     <View className="items-center justify-center">
+                        {/* Profile image box */}
                         <View className="h-32 w-32 items-center justify-center rounded-[40px] border-2 border-indigo-50 bg-white shadow-xl shadow-indigo-100">
                             <Ionicons name="person-outline" size={50} color="#4F46E5" />
-
+                            {/* Camera icon */}
                             <View className="absolute bottom-0 right-0 h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-indigo-600 shadow-md">
                                 <Ionicons name="camera" size={16} color="white" />
                             </View>
                         </View>
-
+                        {/* User name */}
                         <View className="mt-8">
                             <Text className="text-center text-3xl font-extrabold tracking-tight text-gray-900">
                                 {user?.name || "User Name"}

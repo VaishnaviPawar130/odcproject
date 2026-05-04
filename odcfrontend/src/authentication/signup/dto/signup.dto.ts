@@ -35,7 +35,10 @@
 
 import { z } from "zod";
 
+// Signup form validation schema
 export const signupSchema = z.object({
+
+    // Mobile number validation
     mobileNo: z
         .string()
         .trim()
@@ -44,6 +47,7 @@ export const signupSchema = z.object({
         .length(10, "Mobile number must be exactly 10 digits")
         .regex(/^[6-9][0-9]{9}$/, "Enter valid mobile number."),
 
+    // Password validation
     password: z
         .string()
         .trim()
@@ -51,9 +55,9 @@ export const signupSchema = z.object({
         .min(6, "Password must be at least 6 characters")
         .max(50, "Password must not be more than 50 characters"),
 });
-
+// Signup request type
 export type SignupRequestDto = z.infer<typeof signupSchema>;
-
+// Signup user type
 export type SignupUserDto = {
     id: string;
     name?: string;
@@ -61,7 +65,7 @@ export type SignupUserDto = {
     mobileNo?: string;
     role?: "superadmin" | "user";
 };
-
+// Signup API response type
 export type SignupResponseDto = {
     success: boolean;
     message: string;

@@ -7,16 +7,19 @@ import type {
     UserMasterRow,
 } from "../dto/userMaster.dto";
 
+// Backend user row type
 type UserMasterApiRow = {
     _id: string;
     name: string;
     contactNumber: string;
 };
 
+// Get first letter for avatar
 function getInitial(name: string) {
     return name.trim().charAt(0).toUpperCase() || "U";
 }
 
+// Get avatar color from id
 function getColor(id: string) {
     const colors = [
         "bg-blue-500",
@@ -35,6 +38,7 @@ function getColor(id: string) {
     return colors[hash % colors.length];
 }
 
+// Convert API row to frontend row
 function mapUserRow(item: UserMasterApiRow): UserMasterRow {
     return {
         id: item._id,
@@ -46,6 +50,7 @@ function mapUserRow(item: UserMasterApiRow): UserMasterRow {
 }
 
 export class UserMasterService {
+    // Get users list
     static async getUserMasters(): Promise<GetUserMastersResponse> {
         const response = await apiClient.get<{
             data: UserMasterApiRow[];
@@ -62,6 +67,7 @@ export class UserMasterService {
         };
     }
 
+    // Create user
     static async createUserMaster(
         payload: UserMasterFormValues
     ): Promise<UserMasterResponse> {
@@ -83,6 +89,7 @@ export class UserMasterService {
         };
     }
 
+    // Update user
     static async updateUserMaster(
         id: string,
         payload: UserMasterFormValues
@@ -104,6 +111,7 @@ export class UserMasterService {
         };
     }
 
+    // Delete user
     static async deleteUserMaster(id: string): Promise<GetUserMastersResponse> {
         await apiClient.delete(`/user-master/delete/${id}`);
         return this.getUserMasters();

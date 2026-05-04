@@ -3,6 +3,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Modal, Pressable, Text } from "react-native";
 
+// Props for action menu
 type ThreeDotsActionMenuProps = {
     visible: boolean;
     onClose: () => void;
@@ -18,16 +19,17 @@ export default function ThreeDotsActionMenu({
     onEdit,
     onDelete,
 }: ThreeDotsActionMenuProps) {
+    // Handle view action
     function handleView() {
         onClose();
         onView?.();
     }
-
+    // Handle edit action
     function handleEdit() {
         onClose();
         onEdit?.();
     }
-
+    // Handle delete action
     function handleDelete() {
         onClose();
         onDelete?.();
@@ -40,11 +42,14 @@ export default function ThreeDotsActionMenu({
             animationType="fade"
             onRequestClose={onClose}
         >
+            {/* Close menu on outside press */}
             <Pressable
                 onPress={onClose}
                 className="flex-1 justify-center bg-black/30 px-8"
             >
+                {/* Menu card */}
                 <Pressable className="rounded-3xl bg-white p-4 shadow-xl">
+                    {/* Menu title */}
                     <Text
                         allowFontScaling={false}
                         numberOfLines={1}
@@ -52,7 +57,7 @@ export default function ThreeDotsActionMenu({
                     >
                         Actions
                     </Text>
-
+                    {/* View option */}
                     {onView && (
                         <Pressable
                             onPress={handleView}
@@ -69,6 +74,7 @@ export default function ThreeDotsActionMenu({
                             </Text>
                         </Pressable>
                     )}
+                    {/* Edit option */}
 
                     {onEdit && (
                         <Pressable
@@ -86,6 +92,7 @@ export default function ThreeDotsActionMenu({
                             </Text>
                         </Pressable>
                     )}
+                    {/* Delete option */}
 
                     {onDelete && (
                         <Pressable
@@ -103,6 +110,7 @@ export default function ThreeDotsActionMenu({
                             </Text>
                         </Pressable>
                     )}
+                    {/* Cancel button */}
 
                     <Pressable
                         onPress={onClose}

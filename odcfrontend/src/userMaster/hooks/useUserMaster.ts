@@ -9,10 +9,14 @@ import { UserMasterService } from "../services/UserMaster.service";
 import { Alert } from "react-native";
 
 export function useUserMaster() {
+    // Users list state
     const [users, setUsers] = useState<UserMasterRow[]>([]);
+    // Loading state
     const [isLoading, setIsLoading] = useState(false);
+    // Error state
     const [error, setError] = useState<string | null>(null);
 
+    // Load all users
     const loadUserMasters = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -30,6 +34,7 @@ export function useUserMaster() {
         }
     }, []);
 
+    // Create new user
     const createUserMaster = useCallback(
         async (payload: UserMasterFormValues) => {
             setIsLoading(true);
@@ -51,6 +56,8 @@ export function useUserMaster() {
         []
     );
 
+
+    // Update existing user
     const updateUserMaster = useCallback(
         async (id: string, payload: UserMasterFormValues) => {
             setIsLoading(true);
@@ -76,6 +83,7 @@ export function useUserMaster() {
         []
     );
 
+    // Delete user
     const deleteUserMaster = useCallback(async (id: string) => {
         setIsLoading(true);
         setError(null);
@@ -94,10 +102,12 @@ export function useUserMaster() {
         }
     }, []);
 
+    // Load users on mount
     useEffect(() => {
         loadUserMasters();
     }, [loadUserMasters]);
 
+    // Return user data and actions
     return {
         users,
         setUsers,

@@ -4,10 +4,13 @@ import { SignupRequestDto, SignupResponseDto } from "../dto/signup.dto";
 import { SignupService } from "../services/Signup.service";
 
 export function useSignup() {
+    // Loading state
     const [isLoading, setIsLoading] = useState(false);
+    // Error message state
     const [error, setError] = useState<string | null>(null);
+    // Signup response state
     const [data, setData] = useState<SignupResponseDto | null>(null);
-
+    // Signup API call
     const signup = useCallback(async (payload: SignupRequestDto) => {
         setIsLoading(true);
         setError(null);
@@ -24,12 +27,12 @@ export function useSignup() {
             setIsLoading(false);
         }
     }, []);
-
+    // Reset signup state
     const reset = useCallback(() => {
         setError(null);
         setData(null);
     }, []);
-
+    // Return signup data and actions
     return {
         signup,
         reset,

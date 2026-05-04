@@ -6,6 +6,7 @@ import type {
   LoginUserDto,
 } from "../dto/login.dto";
 
+// Backend login response type
 type LoginApiResponse = {
   success: boolean;
   message: string;
@@ -18,6 +19,7 @@ type LoginApiResponse = {
   };
 };
 
+// Convert backend user data to frontend user format
 function mapLoginUser(user: NonNullable<LoginApiResponse["data"]>): LoginUserDto {
   return {
     id: user.id,
@@ -27,6 +29,7 @@ function mapLoginUser(user: NonNullable<LoginApiResponse["data"]>): LoginUserDto
   };
 }
 
+// Call login API
 export class LoginService {
   static async login(payload: LoginRequestDto): Promise<LoginResponseDto> {
     const response = await apiClient.post<LoginApiResponse>("/auth/login", {
@@ -34,6 +37,8 @@ export class LoginService {
       password: payload.password,
     });
 
+
+    // Return formatted login response
     return {
       success: response.data.success,
       message: response.data.message,

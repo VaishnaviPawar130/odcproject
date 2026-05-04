@@ -2,9 +2,10 @@
 import { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "expo-router";
 
-import type { HistoryEntryRow, OptionRow } from "../dto/history.dto";
+import type { HistoryEntryFormValues, OptionRow } from "../dto/history.dto";
 import { HistoryService } from "../services/History.service";
 
+// Get month dropdown options
 export function getMonthOptions(): OptionRow[] {
     const months = Array.from({ length: 12 }, (_, index) => {
         const date = new Date(2026, index, 1);
@@ -18,6 +19,7 @@ export function getMonthOptions(): OptionRow[] {
     return [{ label: "All Months", value: "All" }, ...months];
 }
 
+// Get year dropdown options
 export function getYearOptions(): OptionRow[] {
     const currentYear = new Date().getFullYear();
 
@@ -33,6 +35,7 @@ export function getYearOptions(): OptionRow[] {
     return [{ label: "All Years", value: "All" }, ...years];
 }
 
+// Get month name from date
 export function getMonthName(date: string) {
     if (!date) return "";
 
@@ -41,12 +44,14 @@ export function getMonthName(date: string) {
     });
 }
 
+// Get year from date
 export function getYear(date: string) {
     if (!date) return "";
 
     return new Date(date).getFullYear().toString();
 }
 
+// Format date for display
 export function formatDate(date: string) {
     if (!date) return "-";
 
@@ -56,7 +61,9 @@ export function formatDate(date: string) {
         year: "numeric",
     });
 }
-function mapHistoryEntry(item: any): HistoryEntryRow {
+
+// Convert API data to history row
+function mapHistoryEntry(item: any): HistoryEntryFormValues {
     const mobileNo =
         item.phoneNumber ||
         item.userMobileNo ||
@@ -74,6 +81,8 @@ function mapHistoryEntry(item: any): HistoryEntryRow {
         item.base64 ||
         "";
 
+    const audio = item.audioUri || item.audio || "";
+
     return {
         id: item.id || item._id || "",
 
@@ -87,6 +96,7 @@ function mapHistoryEntry(item: any): HistoryEntryRow {
         phoneNumber: mobileNo,
 
         photoUri: photo,
+        audioUri: audio,
 
         date: item.date || item.createdAt || "",
         createdAt: item.createdAt || item.date || "",
@@ -95,20 +105,26 @@ function mapHistoryEntry(item: any): HistoryEntryRow {
 }
 
 export function useHistory() {
-    const [historyData, setHistoryData] = useState<HistoryEntryRow[]>([]);
+    // History data state
+    const [historyData, setHistoryData] = useState<HistoryEntryFormValues[]>([]);
 
+    // Selected filter values
     const [selectedMonth, setSelectedMonth] = useState("All");
     const [selectedYear, setSelectedYear] = useState("All");
 
+    // Applied filter values
     const [filterMonth, setFilterMonth] = useState("All");
     const [filterYear, setFilterYear] = useState("All");
 
+    // Loading and error states
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Memoized dropdown options
     const monthOptions = useMemo(() => getMonthOptions(), []);
     const yearOptions = useMemo(() => getYearOptions(), []);
 
+    // Load history entriess
     const loadHistoryEntries = useCallback(async () => {
         setIsLoading(true);
         setError(null);
@@ -139,6 +155,7 @@ export function useHistory() {
         }
     }, []);
 
+    // Filter history by month and year
     const filteredHistory = useMemo(() => {
         return historyData.filter((entry) => {
             const filterDate = entry.date || entry.createdAt || "";
@@ -158,19 +175,23 @@ export function useHistory() {
         });
     }, [historyData, filterMonth, filterYear]);
 
+    // Selected month label
     const selectedMonthLabel =
         monthOptions.find((item) => item.value === selectedMonth)?.label ??
         "Month";
 
+    // Selected year label
     const selectedYearLabel =
         yearOptions.find((item) => item.value === selectedYear)?.label ??
         "Year";
 
+    // Apply selected filters
     function handleApplyFilter() {
         setFilterMonth(selectedMonth);
         setFilterYear(selectedYear);
     }
 
+    // Clear all filters
     function handleClearFilter() {
         setSelectedMonth("All");
         setSelectedYear("All");
@@ -178,12 +199,14 @@ export function useHistory() {
         setFilterYear("All");
     }
 
+    // Reload data when screen focuses
     useFocusEffect(
         useCallback(() => {
             loadHistoryEntries();
         }, [loadHistoryEntries])
     );
 
+    // Return history data and actions
     return {
         historyData,
         filteredHistory,

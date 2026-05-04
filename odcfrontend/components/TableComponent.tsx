@@ -2,7 +2,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-
+// Table column type
 export type AppTableColumn<T> = {
     key: string;
     title: string;
@@ -11,7 +11,7 @@ export type AppTableColumn<T> = {
     align?: "left" | "center" | "right";
     render: (item: T, index: number) => ReactNode;
 };
-
+// Table props type
 type AppTableProps<T> = {
     columns: AppTableColumn<T>[];
     data: T[];
@@ -32,6 +32,8 @@ export default function AppTable<T>({
     scrollBody = false,
     maxBodyHeight = 260,
 }: AppTableProps<T>) {
+
+    // Render table rows
     function renderRows() {
         if (data.length === 0) {
             return (
@@ -57,6 +59,8 @@ export default function AppTable<T>({
                 }
                 style={{ minHeight: 56 }}
             >
+                {/* Row columns */}
+
                 {columns.map((column) => (
                     <View
                         key={column.key}
@@ -75,6 +79,7 @@ export default function AppTable<T>({
                     </View>
                 ))}
 
+                {/* Row action button */}
                 {onActionPress && (
                     <Pressable
                         onPress={() => onActionPress(item)}
@@ -98,6 +103,7 @@ export default function AppTable<T>({
                 className="flex-row items-center bg-gray-100 px-4"
                 style={{ height: 44 }}
             >
+                {/* Header columns */}
                 {columns.map((column) => (
                     <Text
                         key={column.key}
@@ -119,6 +125,7 @@ export default function AppTable<T>({
                     </Text>
                 ))}
 
+                {/* Header action column */}
                 {onActionPress && (
                     <Text
                         allowFontScaling={false}

@@ -1,11 +1,13 @@
 import { z } from "zod";
 
+// User master validation schema
 export const userMasterSchema = z.object({
     uuid4: z
         .string()
         .uuid("Invalid user ID.")
         .optional(),
 
+    // Mobile number validation
     mobileNo: z
         .string()
         .trim()
@@ -15,6 +17,7 @@ export const userMasterSchema = z.object({
             "Enter valid 10 digit Indian mobile number."
         ),
 
+    // Name validation
     name: z
         .string()
         .trim()
@@ -39,8 +42,9 @@ export const userMasterSchema = z.object({
         ),
 });
 
+// User master form type
 export type UserMasterFormValues = z.infer<typeof userMasterSchema>;
-
+export type UserMasterErrors = Partial<Record<keyof UserMasterFormValues, string>>;
 export type UserMasterRow = {
     id: string;
     name: string;
@@ -49,6 +53,7 @@ export type UserMasterRow = {
     color: string;
 };
 
+// Get users API response type
 export type GetUserMastersResponse = {
     data: UserMasterRow[];
     totalRecords: number;
@@ -57,6 +62,7 @@ export type GetUserMastersResponse = {
     totalPages: number;
 };
 
+// Single user API response type
 export type UserMasterResponse = {
     data: UserMasterRow;
     message: string;

@@ -3,17 +3,22 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, AppState, Text, View } from "react-native";
 
 export default function InternetStatus() {
+    // Internet status state
     const [hasInternet, setHasInternet] = useState<boolean | null>(null);
+    // Message visibility state
     const [showMessage, setShowMessage] = useState(false);
-
+    // Previous internet status
     const previousStatus = useRef<boolean | null>(null);
+    // Timer reference
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // Slide animation value
     const slideAnim = useRef(new Animated.Value(-80)).current;
-
+    // Show internet status message
     const showStatusMessage = (status: boolean) => {
         setHasInternet(status);
         setShowMessage(true);
 
+        // Slide message down
         Animated.timing(slideAnim, {
             toValue: 0,
             duration: 250,
@@ -24,6 +29,7 @@ export default function InternetStatus() {
             clearTimeout(timerRef.current);
         }
 
+        // Hide message after 3 seconds
         timerRef.current = setTimeout(() => {
             Animated.timing(slideAnim, {
                 toValue: -80,
@@ -35,10 +41,11 @@ export default function InternetStatus() {
         }, 3000);
     };
 
+    // Update status only when changed
     const updateInternetStatus = (status: boolean) => {
         if (previousStatus.current === null) {
             previousStatus.current = status;
-            setHasInternet(status);
+            showStatusMessage(status);
             return;
         }
 
@@ -48,6 +55,7 @@ export default function InternetStatus() {
         }
     };
 
+    // Check current internet status
     const checkInternet = async () => {
         const state = await NetInfo.fetch();
 
@@ -58,7 +66,10 @@ export default function InternetStatus() {
     };
 
     useEffect(() => {
+        // Initial internet check
+
         checkInternet();
+        // Listen for internet status changes
 
         const unsubscribe = NetInfo.addEventListener((state) => {
             const internetAvailable =
@@ -67,15 +78,18 @@ export default function InternetStatus() {
             updateInternetStatus(internetAvailable);
         });
 
+        // Recheck internet every 3 seconds
         const interval = setInterval(() => {
             checkInternet();
         }, 3000);
 
+        // Recheck when app state changes
         const appStateSubscription = AppState.addEventListener("change", () => {
             checkInternet();
         });
 
         return () => {
+            // Cleanup listeners and timers
             unsubscribe();
             clearInterval(interval);
             appStateSubscription.remove();
@@ -86,6 +100,7 @@ export default function InternetStatus() {
         };
     }, []);
 
+    // Hide component when message should not show
     if (!showMessage || hasInternet === null) {
         return null;
     }
@@ -108,6 +123,7 @@ export default function InternetStatus() {
                 zIndex: 9999,
             }}
         >
+            {/* Message content */}
             <View
                 style={{
                     flexDirection: "row",
@@ -116,6 +132,8 @@ export default function InternetStatus() {
                     gap: 8,
                 }}
             >
+                {/* Warning icon text */}
+
                 <Text
                     style={{
                         color: "white",
@@ -123,9 +141,9 @@ export default function InternetStatus() {
                         fontWeight: "700",
                     }}
                 >
-                    {hasInternet ? "✓" : "!"}
+                    {hasInternet ? "" : "!"}
                 </Text>
-
+                {/* Status text */}
                 <Text
                     style={{
                         color: "white",

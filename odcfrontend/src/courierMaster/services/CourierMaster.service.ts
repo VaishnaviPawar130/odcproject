@@ -7,12 +7,14 @@ import type {
     GetCourierMastersResponse,
 } from "../dto/courierMaster.dto";
 
+// Backend courier row type
 type CourierMasterApiRow = {
     _id: string;
     company_name: string;
     contact_number: string;
 };
 
+// Convert API row to frontend row
 function mapCourierMasterRow(item: CourierMasterApiRow): CourierMasterRow {
     return {
         id: item._id,
@@ -22,6 +24,7 @@ function mapCourierMasterRow(item: CourierMasterApiRow): CourierMasterRow {
 }
 
 export class CourierMasterService {
+    // Get courier master list
     static async getCourierMasters(): Promise<GetCourierMastersResponse> {
         const response = await apiClient.get<{
             data: CourierMasterApiRow[];
@@ -38,6 +41,7 @@ export class CourierMasterService {
         };
     }
 
+    // Create courier master
     static async createCourierMaster(
         payload: CourierMasterFormValues
     ): Promise<CourierMasterResponse> {
@@ -57,6 +61,7 @@ export class CourierMasterService {
         };
     }
 
+    // Update courier master
     static async updateCourierMaster(
         id: string,
         payload: CourierMasterFormValues
@@ -77,6 +82,7 @@ export class CourierMasterService {
         };
     }
 
+    // Delete courier master
     static async deleteCourierMaster(
         id: string
     ): Promise<GetCourierMastersResponse> {

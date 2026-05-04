@@ -1,5 +1,6 @@
 
 import { Ionicons } from "@expo/vector-icons";
+import { Audio } from "expo-av";
 import { useState } from "react";
 import {
     FlatList,
@@ -23,41 +24,14 @@ import {
     useHistory,
     formatDate,
 } from "../../../src/history/hooks/useHistory";
+import type {
+    OptionRow,
+    SelectPopupProps,
+    HistoryRecord,
+} from "../../../src/history/dto/history.dto";
 
-import type { OptionRow } from "../../../src/history/dto/history.dto";
 
-type SelectPopupProps = {
-    visible: boolean;
-    title: string;
-    options: OptionRow[];
-    selectedValue: string;
-    onSelect: (value: string) => void;
-    onClose: () => void;
-};
-
-type HistoryRecord = {
-    id: string;
-    date: string;
-    courierName: string;
-    boxQuantity: string;
-    collectedBy: string;
-
-    phoneNumber?: string;
-    userMobileNo?: string;
-
-    photoUri?: string;
-    photo?: string;
-    image?: string;
-    photoUrl?: string;
-    imageBase64?: string;
-    photoBase64?: string;
-    base64?: string;
-
-    hasPhoto?: boolean;
-    createdAt?: string;
-    uuid4?: string;
-};
-
+// Reusable select popup
 function SelectPopup({
     visible,
     title,
@@ -75,6 +49,7 @@ function SelectPopup({
         >
             <View className="flex-1 items-center justify-center bg-black/40 px-6">
                 <View className="w-full rounded-3xl bg-white p-4 shadow-xl">
+                    {/* Popup header */}
                     <View className="mb-4 flex-row items-center justify-between">
                         <Text className="text-base font-extrabold text-slate-900">
                             {title}
@@ -88,6 +63,7 @@ function SelectPopup({
                         </Pressable>
                     </View>
 
+                    {/* Options list */}
                     <FlatList
                         data={options}
                         keyExtractor={(item) => item.value}
@@ -135,6 +111,8 @@ function SelectPopup({
 }
 
 export default function History() {
+    // Get history data and filters
+
     const {
         filteredHistory,
         selectedMonth,
@@ -151,17 +129,23 @@ export default function History() {
         handleClearFilter,
     } = useHistory();
 
+    // Filter popup states
     const [monthPopupVisible, setMonthPopupVisible] = useState(false);
     const [yearPopupVisible, setYearPopupVisible] = useState(false);
 
+    // Selected record state
     const [selectedRecord, setSelectedRecord] = useState<HistoryRecord | null>(
         null
     );
 
+    // Modal states
     const [actionMenuVisible, setActionMenuVisible] = useState(false);
     const [viewModalVisible, setViewModalVisible] = useState(false);
     const [imagePreviewVisible, setImagePreviewVisible] = useState(false);
+    // Audio play state
+    const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
+    // Get proper photo URI
     function getPhotoUri(record: HistoryRecord | null) {
         if (!record) return "";
 
@@ -184,15 +168,18 @@ export default function History() {
         return `data:image/jpeg;base64,${photo}`;
     }
 
+    // Open action menu
     function openActionMenu(record: HistoryRecord) {
         setSelectedRecord(record);
         setActionMenuVisible(true);
     }
 
+    // Close action menu
     function closeActionMenu() {
         setActionMenuVisible(false);
     }
 
+    // View selected record
     function handleViewRecord() {
         if (!selectedRecord) return;
 
@@ -203,6 +190,45 @@ export default function History() {
         setViewModalVisible(true);
     }
 
+    // Play audio note
+    async function playAudio(audioUri?: string) {
+        try {
+            if (!audioUri) {
+                return;
+            }
+
+            setIsPlayingAudio(true);
+
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: false,
+                playsInSilentModeIOS: true,
+            });
+
+            let sound: Audio.Sound | null = null;
+
+            try {
+                const result = await Audio.Sound.createAsync({ uri: audioUri });
+                sound = result.sound;
+            } catch {
+                const fallbackUri = audioUri.split("?")[0];
+                const result = await Audio.Sound.createAsync({ uri: fallbackUri });
+                sound = result.sound;
+            }
+
+            sound.setOnPlaybackStatusUpdate((status) => {
+                if (status.isLoaded && status.didJustFinish) {
+                    setIsPlayingAudio(false);
+                    sound.unloadAsync();
+                }
+            });
+
+            await sound.playAsync();
+        } catch {
+            setIsPlayingAudio(false);
+        }
+    }
+
+    // Table columns
     const historyColumns: AppTableColumn<HistoryRecord>[] = [
         {
             key: "courierName",
@@ -255,6 +281,7 @@ export default function History() {
         },
     ];
 
+    // Table and selected photo data
     const tableData = filteredHistory as unknown as HistoryRecord[];
     const selectedPhotoUri = getPhotoUri(selectedRecord);
 
@@ -271,6 +298,7 @@ export default function History() {
                     paddingBottom: 120,
                 }}
             >
+                {/* Page header */}
                 <View className="mb-4 rounded-3xl border border-slate-100 bg-white px-5 py-4 shadow-sm">
                     <View className="flex-row items-center">
                         <View
@@ -292,6 +320,7 @@ export default function History() {
                     </View>
                 </View>
 
+                {/* Filter card */}
                 <View className="mb-4 rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
                     <View className="mb-4 flex-row items-center justify-between">
                         <View>
@@ -314,6 +343,7 @@ export default function History() {
                         </Pressable>
                     </View>
 
+                    {/* Month and year selectors */}
                     <View className="flex-row gap-3">
                         <Pressable
                             onPress={() => setMonthPopupVisible(true)}
@@ -364,6 +394,7 @@ export default function History() {
                         </Pressable>
                     </View>
 
+                    {/* Apply filter button */}
                     <Pressable
                         onPress={handleApplyFilter}
                         className="mt-4 flex-row items-center justify-center rounded-2xl bg-blue-600 py-3.5 active:opacity-80"
@@ -376,6 +407,7 @@ export default function History() {
                     </Pressable>
                 </View>
 
+                {/* Records count */}
                 <View className="mb-2 flex-row items-center justify-between px-1">
                     <View className="flex-1 pr-3">
                         <Text className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
@@ -395,6 +427,8 @@ export default function History() {
                     </View>
                 </View>
 
+
+                {/* History table */}
                 <View className="rounded-3xl border border-slate-100 bg-white p-2 shadow-sm">
                     <TableComponent<HistoryRecord>
                         columns={historyColumns}
@@ -407,6 +441,7 @@ export default function History() {
                     />
                 </View>
 
+                {/* Month popup */}
                 <SelectPopup
                     visible={monthPopupVisible}
                     title="Select Month"
@@ -416,6 +451,7 @@ export default function History() {
                     onClose={() => setMonthPopupVisible(false)}
                 />
 
+                {/* Year popup */}
                 <SelectPopup
                     visible={yearPopupVisible}
                     title="Select Year"
@@ -425,158 +461,168 @@ export default function History() {
                     onClose={() => setYearPopupVisible(false)}
                 />
 
+                {/* Action menu */}
                 <ThreeDotsActionMenu
                     visible={actionMenuVisible}
                     onClose={closeActionMenu}
                     onView={handleViewRecord}
                 />
-
+                {/* Record details modal */}
                 <Modal
                     visible={viewModalVisible}
                     transparent
                     animationType="fade"
+                    statusBarTranslucent
                     onRequestClose={() => setViewModalVisible(false)}
                 >
-                    <View className="flex-1 items-center justify-center bg-black/50 px-5">
-                        <View className="w-full max-h-[88%] rounded-3xl border border-slate-200 bg-white p-5 shadow-xl">
-                            <ScrollView showsVerticalScrollIndicator={false}>
-                                <View className="mb-5 flex-row items-start justify-between">
-                                    <View className="flex-1 pr-3">
-                                        <Text className="text-xl font-extrabold text-gray-900">
-                                            Courier Record Details
-                                        </Text>
-
-                                        <Text className="mt-1 text-sm font-medium text-gray-500">
-                                            Complete courier collection information
-                                        </Text>
+                    <Pressable
+                        onPress={() => setViewModalVisible(false)}
+                        className="flex-1 items-center justify-center bg-slate-900/60 px-6"
+                    >
+                        <Pressable
+                            onPress={(event) => event.stopPropagation()}
+                            className="w-full overflow-hidden rounded-[32px] bg-white shadow-2xl"
+                            style={{ maxHeight: "80%" }}
+                        >
+                            {/* Header Section */}
+                            <View className="flex-row items-center justify-between bg-slate-50 px-6 py-5">
+                                <View className="flex-row items-center">
+                                    <View className="mr-3 h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-sm shadow-blue-200">
+                                        <Ionicons name="document-text" size={20} color="white" />
                                     </View>
-
-                                    <Pressable
-                                        onPress={() => setViewModalVisible(false)}
-                                        className="h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-100 active:opacity-70"
-                                    >
-                                        <Ionicons
-                                            name="close"
-                                            size={21}
-                                            color="#374151"
-                                        />
-                                    </Pressable>
-                                </View>
-
-                                <View className="mb-5 items-center">
-                                    <Pressable
-                                        onPress={() => {
-                                            if (selectedPhotoUri) {
-                                                setImagePreviewVisible(true);
-                                            }
-                                        }}
-                                        className="rounded-3xl bg-slate-100 p-2"
-                                    >
-                                        {selectedPhotoUri ? (
-                                            <Image
-                                                source={{ uri: selectedPhotoUri }}
-                                                className="h-44 w-44 rounded-2xl bg-gray-100"
-                                                resizeMode="cover"
-                                                onError={(error) => {
-                                                    console.log(
-                                                        "Image Load Error:",
-                                                        error.nativeEvent
-                                                    );
-                                                    console.log(
-                                                        "Image URI:",
-                                                        selectedPhotoUri
-                                                    );
-                                                }}
-                                            />
-                                        ) : (
-                                            <View className="h-44 w-44 items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50">
-                                                <Ionicons
-                                                    name="image-outline"
-                                                    size={42}
-                                                    color="#9CA3AF"
-                                                />
-
-                                                <Text className="mt-2 text-center text-sm font-semibold text-gray-400">
-                                                    No image available
-                                                </Text>
-                                            </View>
-                                        )}
-                                    </Pressable>
-                                </View>
-
-                                <View className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
-                                    <View className="border-b border-gray-200 bg-white px-4 py-4">
-                                        <Text className="text-xs font-bold uppercase tracking-wide text-gray-400">
-                                            Courier Name
+                                    <View>
+                                        <Text className="text-lg font-black tracking-tight text-slate-900">
+                                            Entry Details
                                         </Text>
-
-                                        <Text className="mt-1 text-base font-extrabold text-gray-900">
-                                            {selectedRecord?.courierName || "-"}
-                                        </Text>
-                                    </View>
-
-                                    <View className="flex-row border-b border-gray-200 bg-white px-4 py-4">
-                                        <View className="flex-1 pr-3">
-                                            <Text className="text-xs font-bold uppercase tracking-wide text-gray-400">
-                                                Box Quantity
-                                            </Text>
-
-                                            <Text className="mt-1 text-base font-extrabold text-gray-900">
-                                                {selectedRecord?.boxQuantity || "-"} Boxes
-                                            </Text>
-                                        </View>
-
-                                        <View className="flex-1 pl-3">
-                                            <Text className="text-xs font-bold uppercase tracking-wide text-gray-400">
-                                                Phone Number
-                                            </Text>
-
-                                            <Text className="mt-1 text-base font-extrabold text-gray-900">
-                                                {selectedRecord?.phoneNumber ||
-                                                    selectedRecord?.userMobileNo ||
-                                                    "-"}
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    <View className="border-b border-gray-200 bg-white px-4 py-4">
-                                        <Text className="text-xs font-bold uppercase tracking-wide text-gray-400">
-                                            Collected By
-                                        </Text>
-
-                                        <Text className="mt-1 text-base font-extrabold text-gray-900">
-                                            {selectedRecord?.collectedBy || "-"}
-                                        </Text>
-                                    </View>
-
-                                    <View className="bg-white px-4 py-4">
-                                        <Text className="text-xs font-bold uppercase tracking-wide text-gray-400">
-                                            Date
-                                        </Text>
-
-                                        <Text className="mt-1 text-base font-extrabold text-gray-900">
-                                            {formatDate(
-                                                selectedRecord?.createdAt ||
-                                                selectedRecord?.date ||
-                                                ""
-                                            )}
+                                        <Text className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                                            Shipment Record
                                         </Text>
                                     </View>
                                 </View>
 
                                 <Pressable
                                     onPress={() => setViewModalVisible(false)}
-                                    className="mt-5 rounded-2xl bg-blue-600 py-4 shadow-sm active:opacity-80"
+                                    className="h-10 w-10 items-center justify-center rounded-full bg-white border border-slate-100 active:bg-slate-50"
                                 >
-                                    <Text className="text-center text-sm font-extrabold text-white">
-                                        Close
-                                    </Text>
+                                    <Ionicons name="close" size={22} color="#64748b" />
                                 </Pressable>
+                            </View>
+
+                            <ScrollView
+                                showsVerticalScrollIndicator={false}
+                                contentContainerStyle={{ padding: 24 }}
+                            >
+                                {/* Main Identity Card */}
+                                <View className="mb-6 flex-row items-center rounded-3xl border border-slate-100 bg-slate-50/50 p-4">
+                                    <Pressable
+                                        onPress={() => selectedPhotoUri && setImagePreviewVisible(true)}
+                                        className="mr-4 shadow-sm"
+                                    >
+                                        {selectedPhotoUri ? (
+                                            <Image
+                                                source={{ uri: selectedPhotoUri }}
+                                                className="h-20 w-20 rounded-2xl border-2 border-white bg-slate-200"
+                                                resizeMode="cover"
+                                            />
+                                        ) : (
+                                            <View className="h-20 w-20 items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white">
+                                                <Ionicons name="image-outline" size={24} color="#94A3B8" />
+                                            </View>
+                                        )}
+                                    </Pressable>
+
+                                    <View className="flex-1">
+                                        <Text className="text-[10px] font-bold uppercase tracking-widest text-blue-600">
+                                            Courier Service
+                                        </Text>
+                                        <Text className="text-xl font-black leading-7 text-slate-900" numberOfLines={2}>
+                                            {selectedRecord?.courierName || "N/A"}
+                                        </Text>
+                                        <View className="mt-2 self-start rounded-lg bg-blue-100 px-2 py-1">
+                                            <Text className="text-[11px] font-bold text-blue-700">
+                                                {selectedRecord?.boxQuantity || "0"} Boxes Received
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </View>
+
+                                {/* Info Grid */}
+                                <View className="flex-row flex-wrap justify-between">
+                                    {/* Collected By */}
+                                    <View className="mb-5 w-[48%] rounded-2xl border border-slate-100 p-3">
+                                        <View className="mb-1 flex-row items-center">
+                                            <Ionicons name="person-circle-outline" size={16} color="#6366f1" />
+                                            <Text className="ml-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Recipient</Text>
+                                        </View>
+                                        <Text className="text-sm font-bold text-slate-900" numberOfLines={1}>
+                                            {selectedRecord?.collectedBy || "Not specified"}
+                                        </Text>
+                                    </View>
+
+                                    {/* Phone Number */}
+                                    <View className="mb-5 w-[48%] rounded-2xl border border-slate-100 p-3">
+                                        <View className="mb-1 flex-row items-center">
+                                            <Ionicons name="call-outline" size={16} color="#10b981" />
+                                            <Text className="ml-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Contact</Text>
+                                        </View>
+                                        <Text className="text-sm font-bold text-slate-900" numberOfLines={1}>
+                                            {selectedRecord?.phoneNumber || selectedRecord?.userMobileNo || "-"}
+                                        </Text>
+                                    </View>
+
+                                    {/* Date */}
+                                    <View className="mb-5 w-full rounded-2xl border border-slate-100 p-3">
+                                        <View className="mb-1 flex-row items-center">
+                                            <Ionicons name="calendar-outline" size={16} color="#f59e0b" />
+                                            <Text className="ml-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Registration Date</Text>
+                                        </View>
+                                        <Text className="text-sm font-bold text-slate-900">
+                                            {formatDate(selectedRecord?.createdAt || selectedRecord?.date || "")}
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                {/* Audio Action Area */}
+                                <View className="mt-2 rounded-2xl bg-slate-900 p-4 shadow-lg shadow-slate-300">
+                                    <View className="flex-row items-center justify-between">
+                                        <View className="flex-row items-center">
+                                            <View className={`h-8 w-8 items-center justify-center rounded-full ${selectedRecord?.audioUri ? 'bg-emerald-500/20' : 'bg-slate-700'}`}>
+                                                <Ionicons
+                                                    name={selectedRecord?.audioUri ? "mic" : "mic-off"}
+                                                    size={16}
+                                                    color={selectedRecord?.audioUri ? "#10b981" : "#94a3b8"}
+                                                />
+                                            </View>
+                                            <Text className="ml-3 text-sm font-bold text-white">Voice Note Attachment</Text>
+                                        </View>
+
+                                        <Pressable
+                                            onPress={() => playAudio(selectedRecord?.audioUri)}
+                                            disabled={!selectedRecord?.audioUri}
+                                            className={`flex-row items-center rounded-xl px-4 py-2 ${selectedRecord?.audioUri ? "bg-blue-600 active:bg-blue-700" : "bg-slate-800"
+                                                }`}
+                                        >
+                                            <Ionicons
+                                                name={isPlayingAudio ? "stop-circle" : "play-circle"}
+                                                size={18}
+                                                color="white"
+                                            />
+                                            <Text className="ml-2 text-xs font-black text-white">
+                                                {selectedRecord?.audioUri ? (isPlayingAudio ? "Stop" : "Listen") : "N/A"}
+                                            </Text>
+                                        </Pressable>
+                                    </View>
+                                </View>
+
+                                <Text className="mt-8 text-center text-[10px] font-bold uppercase tracking-[2px] text-slate-300">
+                                    End of Record
+                                </Text>
                             </ScrollView>
-                        </View>
-                    </View>
+                        </Pressable>
+                    </Pressable>
                 </Modal>
 
+                {/* Image preview modal */}
                 <Modal
                     visible={imagePreviewVisible}
                     transparent
