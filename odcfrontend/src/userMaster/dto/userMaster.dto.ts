@@ -15,6 +15,10 @@ export const userMasterSchema = z.object({
         .regex(
             /^[6-9][0-9]{9}$/,
             "Enter valid 10 digit Indian mobile number."
+        )
+        .refine(
+            (value) => !/^(\d)\1{9}$/.test(value),
+            "Mobile number cannot contain same digit repeated 10 times."
         ),
 
     // Name validation
@@ -45,6 +49,7 @@ export const userMasterSchema = z.object({
 // User master form type
 export type UserMasterFormValues = z.infer<typeof userMasterSchema>;
 export type UserMasterErrors = Partial<Record<keyof UserMasterFormValues, string>>;
+
 export type UserMasterRow = {
     id: string;
     name: string;
